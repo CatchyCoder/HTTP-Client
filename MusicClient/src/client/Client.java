@@ -106,11 +106,10 @@ public class Client extends JFrame {
 			InputStream input = connection.getInputStream();
 			
 			// For storing the incoming file (saving)
-			FileOutputStream fOutput = new FileOutputStream("C:/Users/kuznia/Documents/Documents/SONG.mp3");
+			FileOutputStream fOutput = new FileOutputStream("C:/Users/clay/Documents/SONG.mp3");
 			BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
 			
-			int bufferSize = connection.getReceiveBufferSize();
-			System.out.println("Buffer size: " + bufferSize);
+			int bufferSize = 1024 * 4;
 			
 			byte[] bytes = new byte[bufferSize];
 			
