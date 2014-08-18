@@ -116,8 +116,8 @@ public class Client extends JFrame {
 			showMessage("Recieving file...");
 						
 			int count;
-			// Should it be > -1 ????
-			while((count = input.read(bytes)) > 0) {
+			
+			while((count = input.read(bytes)) >= 0) {
 				showMessage(count + " bytes recieved.");
 				bOutput.write(bytes, 0, count);
 			}
