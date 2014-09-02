@@ -23,12 +23,13 @@ public class Client {
 	public void connect() throws IOException {
 		System.out.print("Attemping connection with server... ");
 		
-		// Connecting to the server using the IP address and port
 		Socket socket = null;
 		boolean connected = false;
 		
+		// Make several attempts to connect to the server
 		for(int attempts = 0; !connected && attempts < 15; attempts++) {
 			try {
+				// Connecting to the server using the IP address and port
 				socket = new Socket(InetAddress.getByName(hostIP), 6789);
 				connected = true;
 			}

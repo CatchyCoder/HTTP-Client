@@ -39,34 +39,48 @@ public class Connection implements Runnable {
 		
 		System.out.println("Done.");
 	}
-	
-	int x = 0;
-	
+		
 	@Override
 	public void run() {
-		try{Thread.sleep(2500);}
-		catch(Exception e){e.printStackTrace();}
+		
+		
+		downloadFile();
+		disconnect();
+		if(true) return;		
 		
 		// Tell the server to send us it's list of songs
-		send(x++);
-		if(true) run();
+		send(0);
 		
 		try {
-			System.out.println("Retrieving songs...");
-			// Retrieve those songs
+			System.out.print("Retrieving songs...");
+			// Retrieve songs
 			String[][] songs = (String[][]) input.readObject();
+			System.out.println("Done.");
+			
+			// Displaying received songs
+			for(int n = 0; n < songs.length; n++) {
+				System.out.println(songs[n][0] + " " + songs[n][1] + " " + songs[n][2] + " " + songs[n][3]);
+			}
+			// Get a certain song
+			send(1);
+			// Say what song
+			send(0);
+			
+			downloadFile();
 			
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		disconnect();
 	}
 	
-	private void send(int message) {
+	private void send(Object object) {
 		try {
 			// Send a message to the client
-			output.writeObject(message);
+			output.writeObject(object);
 			output.flush();
 		}
 		catch(IOException e) {
@@ -74,37 +88,50 @@ public class Connection implements Runnable {
 		}
 	}
 	
-	private void getFile() {
+	private void downloadFile() {
+		// For reading the incoming file
+		InputStream in = null;
+		
+		// For storing the incoming file (saving)
+		FileOutputStream fOutput = null;
+		BufferedOutputStream bOutput = null;
+		
 		try {
 			System.out.println("Getting ready to recieve file...");
-			// For reading the incoming file
-			InputStream input = socket.getInputStream();
 			
-			// For storing the incoming file (saving)
-			FileOutputStream fOutput = new FileOutputStream("C:/Users/clay/Documents/SONG.mp3");
-			BufferedOutputStream bOutput = new BufferedOutputStream(fOutput);
+			in = socket.getInputStream();
 			
-			int bufferSize = 1024 * 4;
+			fOutput = new FileOutputStream("C:/Users/Clay/Music/musicFile.mp3");
+			bOutput = new BufferedOutputStream(fOutput);
+			fOutput.flush();
+			bOutput.flush();
+			
+			int bufferSize = 1024 * 8;
 			
 			byte[] bytes = new byte[bufferSize];
 			
 			System.out.println("Recieving file...");
-						
-			// Reading from the input stream and saving to a file
-			for(int count; (count = input.read(bytes)) >= 0;) {
-				System.out.println(count + " bytes recieved.");
+			
+			// Reading from the input stream and saving to a file			
+			for(int count; (count = in.read(bytes)) >= 0;) {
+				System.out.println(count + " bytes received.");
 				bOutput.write(bytes, 0, count);
 			}
-			
-			// Close down streams
-			input.close();
-			fOutput.close();
-			bOutput.close();
 			
 			System.out.println("File recieved!");
 		}
 		catch(Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			// Close down streams
+			try {
+				in.close();
+				bOutput.close();
+			}
+			catch(IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -112,13 +139,13 @@ public class Connection implements Runnable {
 		// Close streams and sockets
 		System.out.println("Ending connection...");
 		try {
-			input.close();
 			output.close();
+			input.close();
 			socket.close();
 		}
 		catch(IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Connection ended.\n==========================\n");
+		System.out.println("Connection ended.");
 	}
 }
