@@ -22,6 +22,10 @@ public class Connection implements Runnable {
 		try {
 			setupStreams();
 			System.out.println("Setup is now finished.\n");
+			
+			// Using this class as a thread may not be used later,
+			// the methods within this class may be called externally
+			// from the clients GUI.
 			new Thread(this).start();
 		}
 		catch(IOException e) {
@@ -30,7 +34,7 @@ public class Connection implements Runnable {
 	}
 	
 	private void setupStreams() throws IOException {
-		// Get streams to send/receive data
+		// Get input & output streams setup
 		System.out.print("Setting up streams... ");
 		
 		output = new ObjectOutputStream(socket.getOutputStream());
@@ -46,7 +50,7 @@ public class Connection implements Runnable {
 		
 		downloadFile();
 		disconnect();
-		if(true) return;		
+		if(true) return;
 		
 		// Tell the server to send us it's list of songs
 		send(0);
@@ -79,7 +83,7 @@ public class Connection implements Runnable {
 	
 	private void send(Object object) {
 		try {
-			// Send a message to the client
+			// Send a message in the form of an object to the client
 			output.writeObject(object);
 			output.flush();
 		}
@@ -99,23 +103,23 @@ public class Connection implements Runnable {
 		try {
 			System.out.println("Getting ready to recieve file...");
 			
+			// Setting up streams
 			in = socket.getInputStream();
-			
 			fOutput = new FileOutputStream("C:/Users/Clay/Music/musicFile.mp3");
 			bOutput = new BufferedOutputStream(fOutput);
 			fOutput.flush();
 			bOutput.flush();
 			
+			// Declaring buffer size
 			int bufferSize = 1024 * 8;
-			
 			byte[] bytes = new byte[bufferSize];
 			
-			System.out.println("Recieving file...");
+			System.out.println("Recieving file:");
 			
-			// Reading from the input stream and saving to a file			
-			for(int count; (count = in.read(bytes)) >= 0;) {
-				System.out.println(count + " bytes received.");
-				bOutput.write(bytes, 0, count);
+			// Reading from the input stream and saving to a file	
+			for(int bytesRead; (bytesRead = in.read(bytes)) >= 0;) {
+				System.out.println("  " + bytesRead + " bytes received.");
+				bOutput.write(bytes, 0, bytesRead);
 			}
 			
 			System.out.println("File recieved!");
@@ -124,7 +128,7 @@ public class Connection implements Runnable {
 			e.printStackTrace();
 		}
 		finally {
-			// Close down streams
+			// Close down all streams
 			try {
 				in.close();
 				bOutput.close();
@@ -137,15 +141,13 @@ public class Connection implements Runnable {
 	
 	public void disconnect() {
 		// Close streams and sockets
-		System.out.println("Ending connection...");
+		System.out.print("Ending connection...");
 		try {
-			output.close();
-			input.close();
 			socket.close();
 		}
 		catch(IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Connection ended.");
+		System.out.println("Done.\nYou are no longer connected to the server.");
 	}
 }
