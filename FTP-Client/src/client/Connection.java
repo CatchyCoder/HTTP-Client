@@ -8,6 +8,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Connection implements Runnable {
 
 	private final Socket socket;
@@ -16,12 +19,14 @@ public class Connection implements Runnable {
 	private ObjectInputStream input;
 	private ObjectOutputStream output;
 	
+	private static final Logger log = LogManager.getLogger(Connection.class);
+	
 	public Connection(Socket socket) {
 		this.socket = socket;
 		
 		try {
 			setupStreams();
-			System.out.println("Setup is now finished.\n");
+			log.debug("Setup is now finished.\n");
 			
 			// Using this class as a thread may not be used later,
 			// the methods within this class may be called externally
@@ -35,13 +40,13 @@ public class Connection implements Runnable {
 	
 	private void setupStreams() throws IOException {
 		// Get input & output streams setup
-		System.out.print("Setting up streams... ");
+		log.debug("Setting up streams... ");
 		
 		output = new ObjectOutputStream(socket.getOutputStream());
 		output.flush();
 		input = new ObjectInputStream(socket.getInputStream());
 		
-		System.out.println("Done.");
+		log.debug("Done.");
 	}
 		
 	@Override
@@ -100,7 +105,7 @@ public class Connection implements Runnable {
 		BufferedOutputStream bOutput = null;
 		
 		try {
-			System.out.println("Getting ready to recieve file...");
+			log.debug("Getting ready to recieve file...");
 			
 			// Setting up streams
 			in = socket.getInputStream();
@@ -113,15 +118,15 @@ public class Connection implements Runnable {
 			int bufferSize = 1024 * 8;
 			byte[] bytes = new byte[bufferSize];
 			
-			System.out.println("Recieving file:");
+			log.debug("Recieving file:");
 			
 			// Reading from the input stream and saving to a file	
 			for(int bytesRead; (bytesRead = in.read(bytes)) > -1;) {
-				System.out.println("  " + bytesRead + " bytes received.");
+				log.debug("  " + bytesRead + " bytes received.");
 				bOutput.write(bytes, 0, bytesRead);
 			}
 			
-			System.out.println("File recieved!");
+			log.debug("File recieved!");
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -141,13 +146,14 @@ public class Connection implements Runnable {
 	
 	public void disconnect() {
 		// Close streams and sockets
-		System.out.print("Ending connection...");
+		log.debug("Ending connection...");
 		try {
 			socket.close();
 		}
 		catch(IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Done.\nYou are no longer connected to the server.");
+		log.debug("Done.");
+		log.debug("You are no longer connected to the server.");
 	}
 }

@@ -4,9 +4,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Client {
 		
 	private final String hostIP = "127.0.0.1";
+	
+	private static final Logger log = LogManager.getLogger(Client.class);
 	
 	public Client() {	
 		try {		
@@ -19,7 +24,7 @@ public class Client {
 	}
 	
 	public void connect() throws IOException {
-		System.out.print("Attemping connection with server[" + hostIP + "]...");
+		log.debug("Attemping connection with server[" + hostIP + "]...");
 		
 		Socket socket = null;
 		boolean connected = false;
@@ -32,8 +37,7 @@ public class Client {
 				connected = true;
 			}
 			catch(IOException e) {
-				if(attempts == 0) System.out.println();
-				System.out.print(".");
+				log.debug("Attempt: " + (attempts + 1));
 				
 				try {
 					// Wait 1 second before attempting to connect again
@@ -45,9 +49,9 @@ public class Client {
 			}
 		}
 		
-		if(socket == null) System.err.println(" Connection timeout.");
+		if(socket == null) log.error("Connection timeout.");
 		else {
-			System.out.println(" Connected.");
+			log.debug("Connected.");
 			new Connection(socket);
 		}
 	}
