@@ -38,8 +38,8 @@ public class Connection implements Runnable {
 		System.out.print("Setting up streams... ");
 		
 		output = new ObjectOutputStream(socket.getOutputStream());
-		input = new ObjectInputStream(socket.getInputStream());
 		output.flush();
+		input = new ObjectInputStream(socket.getInputStream());
 		
 		System.out.println("Done.");
 	}
@@ -48,8 +48,7 @@ public class Connection implements Runnable {
 	public void run() {
 		
 		
-		downloadFile();
-		disconnect();
+		
 		if(true) return;
 		
 		// Tell the server to send us it's list of songs
@@ -117,7 +116,7 @@ public class Connection implements Runnable {
 			System.out.println("Recieving file:");
 			
 			// Reading from the input stream and saving to a file	
-			for(int bytesRead; (bytesRead = in.read(bytes)) >= 0;) {
+			for(int bytesRead; (bytesRead = in.read(bytes)) > -1;) {
 				System.out.println("  " + bytesRead + " bytes received.");
 				bOutput.write(bytes, 0, bytesRead);
 			}
@@ -131,6 +130,7 @@ public class Connection implements Runnable {
 			// Close down all streams
 			try {
 				in.close();
+				fOutput.close();
 				bOutput.close();
 			}
 			catch(IOException e) {
