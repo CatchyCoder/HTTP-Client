@@ -34,7 +34,7 @@ public class Connection implements Runnable {
 			new Thread(this).start();
 		}
 		catch(IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 	
@@ -60,14 +60,14 @@ public class Connection implements Runnable {
 		send(0);
 		
 		try {
-			System.out.print("Retrieving songs...");
+			log.debug("Retrieving songs...");
 			// Retrieve songs
 			String[][] songs = (String[][]) input.readObject();
-			System.out.println("Done.");
+			log.debug("Done.");
 			
 			// Displaying received songs
 			for(int n = 0; n < songs.length; n++) {
-				System.out.println(songs[n][0] + " " + songs[n][1] + " " + songs[n][2] + " " + songs[n][3]);
+				log.debug(songs[n][0] + " " + songs[n][1] + " " + songs[n][2] + " " + songs[n][3]);
 			}
 			// Get a certain song
 			send(1);
@@ -77,9 +77,9 @@ public class Connection implements Runnable {
 			downloadFile();
 			
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		
 		disconnect();
@@ -92,7 +92,7 @@ public class Connection implements Runnable {
 			output.flush();
 		}
 		catch(IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class Connection implements Runnable {
 			log.debug("File recieved!");
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		finally {
 			// Close down all streams
@@ -139,7 +139,7 @@ public class Connection implements Runnable {
 				bOutput.close();
 			}
 			catch(IOException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 	}
@@ -151,7 +151,7 @@ public class Connection implements Runnable {
 			socket.close();
 		}
 		catch(IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		log.debug("Done.");
 		log.debug("You are no longer connected to the server.");
