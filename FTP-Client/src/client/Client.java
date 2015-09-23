@@ -8,22 +8,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Client {
-		
-	private final String hostIP = "127.0.0.1";
+	
+	// Router public IP = 96.19.159.249
+	private final String hostIP = "65.129.59.91";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
 	
-	public Client() {	
-		try {		
-			// Connect to the server
-			connect();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
+	public Client() {
+		// Connect to the server
+		connect();
 	}
 	
-	public void connect() throws IOException {
+	public void connect() {
 		log.debug("Attemping connection with server[" + hostIP + "]...");
 		
 		Socket socket = null;
@@ -33,7 +29,7 @@ public class Client {
 		for(int attempts = 0; !connected && attempts < 15; attempts++) {
 			try {
 				// Connecting to the server using the IP address and port
-				socket = new Socket(InetAddress.getByName(hostIP), 6789);
+				socket = new Socket(InetAddress.getByName(hostIP), 6501);
 				connected = true;
 			}
 			catch(IOException e) {
@@ -42,9 +38,8 @@ public class Client {
 				try {
 					// Wait 1 second before attempting to connect again
 					Thread.sleep(1000);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (InterruptedException e2) {
+					log.error(e2);
 				}
 			}
 		}
