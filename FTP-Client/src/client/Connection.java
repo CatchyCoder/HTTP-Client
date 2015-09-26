@@ -32,6 +32,7 @@ public class Connection implements Runnable {
 			// the methods within this class may be called externally
 			// from the clients GUI.
 			new Thread(this).start();
+			
 		}
 		catch(IOException e) {
 			log.error(e);
@@ -51,7 +52,6 @@ public class Connection implements Runnable {
 		
 	@Override
 	public void run() {
-		
 		
 		
 		if(true) return;
