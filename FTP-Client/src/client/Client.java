@@ -11,7 +11,10 @@ public class Client {
 	
 	// Router public IP = 96.19.159.249
 	//private final String hostIP = "65.129.59.91";
+<<<<<<< HEAD
 	//private final String hostIP = "192.168.0.34";
+=======
+>>>>>>> e3dfe567f26adf036c2951b56b0d8e3135663c9d
 	private final String hostIP = "127.0.0.1";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
