@@ -10,7 +10,9 @@ import org.apache.logging.log4j.Logger;
 public class Client {
 	
 	// Router public IP = 96.19.159.249
-	private final String hostIP = "65.129.59.91";
+	//private final String hostIP = "65.129.59.91";
+	//private final String hostIP = "192.168.0.34";
+	private final String hostIP = "127.0.0.1";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
 	

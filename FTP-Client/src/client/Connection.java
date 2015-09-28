@@ -21,6 +21,8 @@ public class Connection implements Runnable {
 	
 	private static final Logger log = LogManager.getLogger(Connection.class);
 	
+	private boolean gotFile = false;
+	
 	public Connection(Socket socket) {
 		this.socket = socket;
 		
@@ -48,16 +50,28 @@ public class Connection implements Runnable {
 		
 		log.debug("Done.");
 	}
-		
+	
 	@Override
 	public void run() {
 		
+		while(true) {
+			// Tell the server to send a test object
+			send(0);
+			try {
+				Integer integer = (Integer) input.readObject();
+				log.debug("Recieved test object from server.\nObject reads: " + integer.intValue());
+			} catch (ClassNotFoundException e) {
+				log.error(e);
+			} catch (IOException e) {
+				log.error(e);
+			}
+			
+			send(1);
+			if(!gotFile) gotFile = downloadFile();
+		}
 		
 		
-		if(true) return;
-		
-		// Tell the server to send us it's list of songs
-		send(0);
+		/*if(true)return;
 		
 		try {
 			log.debug("Retrieving songs...");
@@ -82,7 +96,7 @@ public class Connection implements Runnable {
 			log.error(e);
 		}
 		
-		disconnect();
+		disconnect();*/
 	}
 	
 	private void send(Object object) {
@@ -96,7 +110,7 @@ public class Connection implements Runnable {
 		}
 	}
 	
-	private void downloadFile() {
+	private boolean downloadFile() {
 		// For reading the incoming file
 		InputStream in = null;
 		
@@ -109,7 +123,8 @@ public class Connection implements Runnable {
 			
 			// Setting up streams
 			in = socket.getInputStream();
-			fOutput = new FileOutputStream("C:/Users/Clay/Music/musicFile.mp3");
+			
+			fOutput = new FileOutputStream("C:/Users/owner1/Music/" + String.valueOf(((int)(Math.random() * 10 + 1))) + ".mp3");
 			bOutput = new BufferedOutputStream(fOutput);
 			fOutput.flush();
 			bOutput.flush();
@@ -127,27 +142,27 @@ public class Connection implements Runnable {
 			}
 			
 			log.debug("File recieved!");
-		}
-		catch(Exception e) {
+			return true;
+		} catch (IOException e) {
 			log.error(e);
-		}
-		finally {
+		} finally {
 			// Close down all streams
 			try {
-				in.close();
-				fOutput.close();
-				bOutput.close();
+				if(in != null) in.close();
+				if(fOutput != null) fOutput.close();
+				if(bOutput != null) bOutput.close();
 			}
 			catch(IOException e) {
 				log.error(e);
 			}
 		}
+		return false;
 	}
 	
 	public void disconnect() {
-		// Close streams and sockets
 		log.debug("Ending connection...");
 		try {
+			// Close the socket and its associated input/output streams
 			socket.close();
 		}
 		catch(IOException e) {
