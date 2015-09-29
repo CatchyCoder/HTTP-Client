@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import org.apache.logging.log4j.LogManager;
@@ -15,10 +16,6 @@ public class Connection implements Runnable {
 
 	private final Socket socket;
 	
-	// For simple communication with the client
-	private ObjectInputStream input;
-	private ObjectOutputStream output;
-	
 	private static final Logger log = LogManager.getLogger(Connection.class);
 	
 	private boolean gotFile = false;
@@ -26,30 +23,12 @@ public class Connection implements Runnable {
 	public Connection(Socket socket) {
 		this.socket = socket;
 		
-		try {
-			setupStreams();
-			log.debug("Setup is now finished.\n");
-			
-			// Using this class as a thread may not be used later,
-			// the methods within this class may be called externally
-			// from the clients GUI.
-			new Thread(this).start();
-			
-		}
-		catch(IOException e) {
-			log.error(e);
-		}
-	}
-	
-	private void setupStreams() throws IOException {
-		// Get input & output streams setup
-		log.debug("Setting up streams... ");
-		
-		output = new ObjectOutputStream(socket.getOutputStream());
-		output.flush();
-		input = new ObjectInputStream(socket.getInputStream());
-		
-		log.debug("Done.");
+		// Using this class as a thread may not be used later,
+		// the methods within this class may be called externally
+		// from the clients GUI.
+		Thread thread = new Thread(this);
+		log.debug("Setup for [" + socket.getInetAddress() + "] complete. Thread [" + thread.getName() + "] will now start.");
+		thread.start();
 	}
 	
 	@Override
@@ -57,106 +36,98 @@ public class Connection implements Runnable {
 		
 		while(true) {
 			// Tell the server to send a test object
-			send(0);
-			try {
-				Integer integer = (Integer) input.readObject();
-				log.debug("Recieved test object from server.\nObject reads: " + integer.intValue());
-			} catch (ClassNotFoundException e) {
-				log.error(e);
-			} catch (IOException e) {
-				log.error(e);
+			sendObject(0);
+			
+			/*
+			 * The sockets input stream is not intended to be closed, that's why
+			 * it's okay to embed the input stream object in the constructor - that way
+			 * the close() method for the socket's input stream isn't called.
+			 */
+			try (ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
+				// Read command from server
+				Object object = input.readObject();
+				if(object instanceof Integer) {
+					log.debug("Recieved test object from server. Object reads: " + ((Integer)object).intValue());
+				} else {
+					// Something went wrong with the server's message
+					log.error("Command from server is not an Integer. " + object + " received.");
+				}
+			} catch (IOException | ClassNotFoundException e) {
+				log.error(e.getStackTrace());
 			}
 			
-			send(1);
-			if(!gotFile) gotFile = downloadFile();
+			if(!gotFile) {
+				sendObject(1);
+				gotFile = downloadFile("/home/clay/" + String.valueOf(((int)(Math.random() * 10 + 1))) + ".mp3");
+			}
 		}
-		
-		/*if(true)return;
-		
+	}
+	
+	private void sendObject(Object object) {
+		log.debug("Setting up Object transfer streams...");
+		/*
+		 * The sockets output stream is not intended to be closed, that's why
+		 * it's okay to embed the output stream object in the constructor - that way
+		 * the close() method for the socket's output stream isn't called.
+		 */
+		OutputStream s = null;
 		try {
-			log.debug("Retrieving songs...");
-			// Retrieve songs
-			String[][] songs = (String[][]) input.readObject();
+			s = socket.getOutputStream();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try(ObjectOutputStream output = new ObjectOutputStream(s)) {
+			output.flush();
 			log.debug("Done.");
 			
-			// Displaying received songs
-			for(int n = 0; n < songs.length; n++) {
-				log.debug(songs[n][0] + " " + songs[n][1] + " " + songs[n][2] + " " + songs[n][3]);
-			}
-			// Get a certain song
-			send(1);
-			// Say what song
-			send(0);
-			
-			downloadFile();
-			
-		} catch (ClassNotFoundException e) {
-			log.error(e);
-		} catch (IOException e) {
-			log.error(e);
-		}
-		
-		disconnect();*/
-	}
-	
-	private void send(Object object) {
-		try {
 			// Send a message in the form of an object to the client
+			log.debug("Sending " + object);
 			output.writeObject(object);
 			output.flush();
+			log.debug("Done.");
+			log.debug("STATE A: " + socket.isClosed());
+		} catch (IOException e) {
+			log.error(e.getStackTrace(), e);
 		}
-		catch(IOException e) {
-			log.error(e);
-		}
+		log.debug("STATE B: " + socket.isClosed());
 	}
 	
-	private boolean downloadFile() {
-		// For reading the incoming file
-		InputStream in = null;
-		
-		// For storing the incoming file (saving)
-		FileOutputStream fOutput = null;
-		BufferedOutputStream bOutput = null;
-		
-		try {
-			log.debug("Getting ready to recieve file...");
-			
-			// Setting up streams
-			in = socket.getInputStream();
-			
-			fOutput = new FileOutputStream("C:/Users/owner1/Music/" + String.valueOf(((int)(Math.random() * 10 + 1))) + ".mp3");
-			bOutput = new BufferedOutputStream(fOutput);
+	private boolean downloadFile(final String filePath) {
+		log.debug("Setting up file transfer streams...");
+		try(
+			// For storing the incoming file (saving)
+			FileOutputStream fOutput = new FileOutputStream(filePath);
+			BufferedOutputStream bOutput = new BufferedOutputStream(fOutput)
+		) {
 			fOutput.flush();
 			bOutput.flush();
+			
+			// For reading the incoming file
+			InputStream input = socket.getInputStream();
+			
+			log.debug("Done.");
 			
 			// Declaring buffer size
 			int bufferSize = 1024 * 8;
 			byte[] bytes = new byte[bufferSize];
 			
-			log.debug("Recieving file:");
+			log.debug("Downloading file...");
 			
 			// Reading from the input stream and saving to a file	
-			for(int bytesRead; (bytesRead = in.read(bytes)) > -1;) {
-				log.debug("  " + bytesRead + " bytes received.");
+			for(int bytesRead; (bytesRead = input.read(bytes)) > -1;) {
+				log.debug(bytesRead + " bytes received.");
 				bOutput.write(bytes, 0, bytesRead);
 			}
+			bOutput.flush();
 			
-			log.debug("File recieved!");
-			return true;
+			log.debug("Done.");
 		} catch (IOException e) {
-			log.error(e);
-		} finally {
-			// Close down all streams
-			try {
-				if(in != null) in.close();
-				if(fOutput != null) fOutput.close();
-				if(bOutput != null) bOutput.close();
-			}
-			catch(IOException e) {
-				log.error(e);
-			}
+			log.error(e.getStackTrace());
+			return false;
 		}
-		return false;
+		log.debug("try-with-resources block executed. Streams should be closed.");
+		return true;
 	}
 	
 	public void disconnect() {
@@ -166,9 +137,8 @@ public class Connection implements Runnable {
 			socket.close();
 		}
 		catch(IOException e) {
-			log.error(e);
+			// Ignoring exception to close quietly
 		}
 		log.debug("Done.");
-		log.debug("You are no longer connected to the server.");
 	}
 }
