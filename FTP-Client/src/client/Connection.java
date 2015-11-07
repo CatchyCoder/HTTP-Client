@@ -2,6 +2,7 @@ package client;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +14,6 @@ import java.util.ArrayList;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import command.Command;
 
 public class Connection implements Runnable {
 	
@@ -43,7 +42,10 @@ public class Connection implements Runnable {
 			out.flush();
 			ObjectOutputStream oOutput = new ObjectOutputStream(out);
 			oOutput.flush();
+			DataOutputStream dOutput = new DataOutputStream(out);
+			dOutput.flush();
 			outStreams.add(oOutput);
+			outStreams.add(dOutput);
 			log.debug("Done.");
 			
 			// Input streams setup
@@ -54,7 +56,7 @@ public class Connection implements Runnable {
 			log.debug("Done.");
 			
 		} catch (IOException e) {
-			log.error("Failed to set up streams with the server. Disconnecting.", (Object) e.getStackTrace());
+			log.error("Failed to set up streams with the server. Disconnecting.", e);
 			disconnect();
 			return;
 		}
@@ -88,49 +90,42 @@ public class Connection implements Runnable {
 		
 		while(true) {
 			// Tell the server to send a test object
-			/*sendCommand(Command.TEST_OBJECT);
+			sendInt(0);
 			
-			// Read command from server
-			Object object = null;
+			// Read integer from server
 			try {
-				object = getInput(ObjectInputStream.class).read();
+				int serverCommand = ((DataInputStream) getInput(DataInputStream.class)).readInt();
+				log.debug("Test integer from server: " + serverCommand);
 			} catch (IOException e) {
-				log.error("Failed to read command from server.", (Object) e.getStackTrace());
+				log.error("Failed to read test integer from server.", e);
 				break;
 			}
 			
-			// Display message from server
-			if(object instanceof Integer) {
-				log.debug("Recieved test object from server. Object reads: " + ((Integer)object).intValue());
-			} else {
-				// Something went wrong with the server's message
-				log.error("Command from server is not an Integer. " + object + " received.");
-			}*/
-			
 			// Download file if not already downloaded
 			if(!gotFile) {
-				sendCommand(Command.FILE);
+				sendInt(1);
 				gotFile = downloadFile("/home/clay/" + String.valueOf(System.currentTimeMillis()) + ".mp3");
 				try {
 					Thread.sleep(5000);
+				} catch(Exception e) {
+					log.error("", e);
 				}
-				catch(Exception e){}
 			}
 		}
 	}
 	
-	private void sendCommand(Command command) {
-		final ObjectOutputStream out = (ObjectOutputStream) getOutput(ObjectOutputStream.class);
+	private void sendInt(int n) {
+		final DataOutputStream out = (DataOutputStream) getOutput(DataOutputStream.class);
 		try {
 			out.flush();
 			
 			// Send a message in the form of an object to the server
-			log.debug("Sending " + command);
-			out.writeObject(command);
+			log.debug("Sending integer: " + n);
+			out.writeInt(n);
 			out.flush();
 			log.debug("Done.");
 		} catch (IOException e) {
-			log.error("Error sending object [" + command + "] .", (Object) e.getStackTrace());
+			log.error("Error sending integer [" + n + "] .", e);
 		}
 	}
 	
@@ -177,7 +172,7 @@ public class Connection implements Runnable {
 			log.debug("==============================================");
 			log.debug("Done.");
 		} catch (IOException e) {
-			log.error("Error downloading file.", (Object) e.getStackTrace());
+			log.error("IO error.", e);
 			return false;
 		}
 		log.debug("try-with-resources block executed. File streams should be closed.");
@@ -189,30 +184,30 @@ public class Connection implements Runnable {
 		for(InputStream stream: inStreams) {
 			try {
 				stream.close();
+				log.debug("Done.");
 			} catch (IOException e) {
-				log.error(e.getStackTrace());
+				log.error("Error closing input stream with server.", e);
 			}
 		}
-		log.debug("Done.");
 		
 		log.debug("Closing output streams...");
 		for(OutputStream stream: outStreams) {
 			try {
 				stream.close();
+				log.debug("Done.");
 			} catch (IOException e) {
-				log.error(e.getStackTrace());
+				log.error("Error closing output stream with server.", e);
 			}
 		}
-		log.debug("Done.");
 		
 		log.debug("Ending connection...");
 		try {
 			// Close the socket and its associated input/output streams
 			socket.close();
+			log.debug("Done.");
 		}
 		catch(IOException e) {
-			log.error(e.getStackTrace());
+			log.error("Error closing socket with server.", e);
 		}
-		log.debug("Done.");
 	}
 }
