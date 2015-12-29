@@ -1,4 +1,4 @@
-package client;
+package music.client;
 
 public class ClientTest {
 

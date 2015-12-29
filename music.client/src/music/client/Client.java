@@ -1,4 +1,4 @@
-package client;
+package music.client;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,10 +9,9 @@ import org.apache.logging.log4j.Logger;
 
 public class Client {
 	
-	// Router public IP = 96.19.159.249
-	//private final String hostIP = "65.129.59.91"; // Raspberry Pi public IP
+	private final String hostIP = "65.129.41.219"; // Raspberry Pi public IP
 	//private final String hostIP = "192.168.0.34"; // Raspberry Pi private IP
-	private final String hostIP = "127.0.0.1";
+	//private final String hostIP = "127.0.0.1";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
 	
@@ -32,6 +31,8 @@ public class Client {
 			try {
 				// Connecting to the server using the IP address and port
 				socket = new Socket(InetAddress.getByName(hostIP), 6501);
+				log.debug("Local (Ephemeral) port: " + socket.getLocalPort());
+				log.debug("Remote port: " + socket.getPort());
 				connected = true;
 			}
 			catch(IOException e) {
@@ -41,7 +42,7 @@ public class Client {
 					// Wait 1 second before attempting to connect again
 					Thread.sleep(1000);
 				} catch (InterruptedException e2) {
-					log.error(e2.getStackTrace());
+					log.error(e2.getStackTrace(), e2);
 				}
 			}
 		}
@@ -49,7 +50,7 @@ public class Client {
 		if(socket == null) log.error("Connection timeout.");
 		else {
 			log.debug("Connected.");
-			new Connection(socket);
+			new ConnectionImpl(socket);
 		}
 	}
 }
