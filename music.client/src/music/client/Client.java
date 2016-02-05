@@ -9,15 +9,18 @@ import org.apache.logging.log4j.Logger;
 
 public class Client {
 	
-	private final String hostIP = "65.129.41.219"; // Raspberry Pi public IP
+	private final String hostIP = "174.27.18.237"; // Raspberry Pi public IP
 	//private final String hostIP = "192.168.0.34"; // Raspberry Pi private IP
 	//private final String hostIP = "127.0.0.1";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
 	
+	private ConnectionImpl connection;
+	
 	public Client() {
 		// Connect to the server
 		connect();
+		new GUI(connection);
 	}
 	
 	public void connect() {
@@ -50,7 +53,7 @@ public class Client {
 		if(socket == null) log.error("Connection timeout.");
 		else {
 			log.debug("Connected.");
-			new ConnectionImpl(socket);
+			connection = new ConnectionImpl(socket);
 		}
 	}
 }

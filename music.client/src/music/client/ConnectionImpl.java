@@ -26,7 +26,7 @@ public class ConnectionImpl extends AbstractConnection implements Runnable {
 		
 		// Disconnect
 		sendInt(0);
-		try {Thread.sleep(1000);}
+		try {Thread.sleep(1500);}
 		catch(Exception e){}
 		disconnect();
 	}
