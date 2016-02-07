@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Client {
 	
-	private final String hostIP = "174.27.18.237"; // Raspberry Pi public IP
+	private final String hostIP = "75.167.184.77"; // Raspberry Pi public IP
 	//private final String hostIP = "192.168.0.34"; // Raspberry Pi private IP
 	//private final String hostIP = "127.0.0.1";
 	
@@ -34,8 +34,7 @@ public class Client {
 			try {
 				// Connecting to the server using the IP address and port
 				socket = new Socket(InetAddress.getByName(hostIP), 6501);
-				log.debug("Local (Ephemeral) port: " + socket.getLocalPort());
-				log.debug("Remote port: " + socket.getPort());
+				
 				connected = true;
 			}
 			catch(IOException e) {
@@ -43,7 +42,7 @@ public class Client {
 				
 				try {
 					// Wait 1 second before attempting to connect again
-					Thread.sleep(1000);
+					Thread.sleep(250);
 				} catch (InterruptedException e2) {
 					log.error(e2.getStackTrace(), e2);
 				}
@@ -53,6 +52,8 @@ public class Client {
 		if(socket == null) log.error("Connection timeout.");
 		else {
 			log.debug("Connected.");
+			log.debug("-> Local (Ephemeral) port: " + socket.getLocalPort());
+			log.debug("-> Remote port: " + socket.getPort());
 			connection = new ConnectionImpl(socket);
 		}
 	}

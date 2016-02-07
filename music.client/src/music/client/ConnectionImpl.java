@@ -21,11 +21,15 @@ public class ConnectionImpl extends AbstractConnection implements Runnable {
 	@Override
 	public void run() {
 		// Send file
-		sendInt(3);
-		sendFile("C://Users/owner1/Documents/test/test_File.mp3");
+		//sendInt(2); // 2 is the OLD protocol
+		//sendFile("C://Users/Clay-/Documents/test/test_File.mp3");
+		
+		// Download file
+		sendInt(1); // OLD PROTOCOL, not 1,3,2  maybe 0??
+		downloadFile("C://Users/Clay-/Documents/music_download/test_File.mp3");
 		
 		// Disconnect
-		sendInt(0);
+		//sendInt(0);
 		try {Thread.sleep(1500);}
 		catch(Exception e){}
 		disconnect();
