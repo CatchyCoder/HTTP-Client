@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Client {
 	
-	private final String hostIP = "75.167.184.77"; // Raspberry Pi public IP
+	private final String hostIP = "65.129.63.26"; // Raspberry Pi public IP
 	//private final String hostIP = "192.168.0.34"; // Raspberry Pi private IP
 	//private final String hostIP = "127.0.0.1";
 	

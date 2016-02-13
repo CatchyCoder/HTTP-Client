@@ -112,7 +112,7 @@ public class GUI implements ActionListener{
 			// Getting artists
 			// TODO:
 			String[] artists = new String[50];
-			String s = "bjsoejlns";
+			String s = "bjwtweegwesoejlnwetweffssagwadfhjrjutmrye";
 			
 			for(int n = 0; n < artists.length; n++) {
 				int index = (int)(Math.random() * (s.length() - 1)) + 1;
