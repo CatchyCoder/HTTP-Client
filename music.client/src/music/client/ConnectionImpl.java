@@ -24,39 +24,87 @@ public class ConnectionImpl extends AbstractConnection implements Runnable {
 		new Thread(this).start();
 	}
 	
+	private void randomWait() {
+		int randTime = (int)(Math.random() * 3000);
+		
+		try {
+			Thread.sleep(0);
+		} catch(Exception e) {
+			
+		}
+	}
+	
 	@Override
 	public void run() {
-		while(true) {
-			System.out.println("===============\n\n");
+		// Read server's first ACK
+		readACK();
+		randomWait();
+		// Download multiple times
+		for(int n = 0; !isClosed() && n < 3; n++) {
 			// Download file
-//			sendInt(2);
-//			long downStart = System.currentTimeMillis();
-//			downloadFile("C://Users/Clay-/Documents/music_client/download");
-//			System.out.println((System.currentTimeMillis() - downStart) / 1000.0 + " seconds to download.");
-			
-			try {Thread.sleep(10000);}
-			catch(Exception e){}
-			
-			// Send file
-			sendInt(3);
-			long upStart = System.currentTimeMillis();
-			sendFile("C://Users/Clay-/Documents/music_client/send/test.mp3");
-			System.out.println((System.currentTimeMillis() - upStart) / 1000.0 + " seconds to upload.");
+			long downStart = System.currentTimeMillis();
+			readFile("C://Users/Clay-/Documents/music_client/download");
+			System.out.println((System.currentTimeMillis() - downStart) / 1000.0 + " seconds to download.");
+			randomWait();
 		}
 		
+		// Upload multiple times
+		for(int n = 0; !isClosed() && n < 3; n++) {
+			// Send file
+			long upStart = System.currentTimeMillis();
+			writeFile("C://Users/Clay-/Documents/music_client/send/test.mp3");
+			System.out.println((System.currentTimeMillis() - upStart) / 1000.0 + " seconds to upload.");
+			randomWait();
+		}
 		
-		/*
-		 * WORKS: 1000
-		 * FAILS: 700
-		 */
-		
-		
-		
+		// Download AND Upload multiple times
+		for(int n = 0; !isClosed() && n < 3; n++) {
+			// Download file
+			long downStart = System.currentTimeMillis();
+			readFile("C://Users/Clay-/Documents/music_client/download");
+			System.out.println((System.currentTimeMillis() - downStart) / 1000.0 + " seconds to download.");
+			
+			randomWait();
+			
+			// Send file
+			long upStart = System.currentTimeMillis();
+			writeFile("C://Users/Clay-/Documents/music_client/send/test.mp3");
+			System.out.println((System.currentTimeMillis() - upStart) / 1000.0 + " seconds to upload.");
+			
+			randomWait();
+		}
+		randomWait();
 		
 		// Disconnect
-//		sendInt(0);
-//		try {Thread.sleep(1000);}
-//		catch(Exception e){}
-//		disconnect();
+		disconnect();
+	}
+	
+	@Override
+	public synchronized void disconnect() {
+		if(!isClosed()) {
+			// Notify server that client is disconnecting
+			writeInt(Message.DISCONNECT.ordinal());
+			
+			// Disconnect
+			super.disconnect();
+		}
+	}
+	
+	@Override
+	protected void readFile(String newPath) {
+		// Notify server that client is downloading a file
+		writeInt(Message.SERVER_UPLOAD_FILE.ordinal());
+		
+		// Download file
+		super.readFile(newPath);
+	}
+	
+	@Override
+	protected void writeFile(String filePath) {
+		// Notify server that client is sending a file
+		writeInt(Message.CLIENT_UPLOAD_FILE.ordinal());
+		
+		// Send file
+		super.writeFile(filePath);
 	}
 }
