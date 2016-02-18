@@ -9,13 +9,13 @@ import org.apache.logging.log4j.Logger;
 
 public class Client {
 	
-	private final String hostIP = "65.129.63.26"; // Raspberry Pi public IP
+	//private final String hostIP = "65.129.63.26"; // Raspberry Pi public IP
 	//private final String hostIP = "192.168.0.34"; // Raspberry Pi private IP
-	//private final String hostIP = "127.0.0.1";
+	private final String hostIP = "127.0.0.1";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
 	
-	private ConnectionImpl connection;
+	private ClientConnectionImpl connection;
 	
 	public Client() {
 		// Connect to the server
@@ -54,7 +54,7 @@ public class Client {
 			log.debug("Connected.");
 			log.debug("-> Local (Ephemeral) port: " + socket.getLocalPort());
 			log.debug("-> Remote port: " + socket.getPort());
-			connection = new ConnectionImpl(socket);
+			connection = new ClientConnectionImpl(socket);
 		}
 	}
 }

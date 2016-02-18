@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -14,9 +15,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
+import music.core.Track;
+import music.core.binarytree.BinaryTree;
+
 public class GUI implements ActionListener{
 
-	private final ConnectionImpl connection;
+	private final ClientConnectionImpl connection;
 	
 	private JFrame frame = new JFrame();
 	private JPanel leftPanel, rightPanel;
@@ -24,7 +28,7 @@ public class GUI implements ActionListener{
 	private JList<String> list;
 	private JScrollPane listScroller;
 	
-	public GUI(ConnectionImpl connection) {
+	public GUI(ClientConnectionImpl connection) {
 		this.connection = connection;
 		
 		// Setting up client GUI
@@ -101,31 +105,58 @@ public class GUI implements ActionListener{
 		rightPanel.add(listScroller);
 		
 	}
+	
+	private void updateList(ArrayList<String> values) {
+		rightPanel.remove(listScroller);
+		list = new JList<String>(values.toArray(new String[values.size()]));
+		listScroller = new JScrollPane(list);
+		rightPanel.add(listScroller);
+		rightPanel.validate();
+		rightPanel.repaint();
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent object) {
 		Object source = object.getSource();
 		
 		if(source.equals(artistButton)) {
-			System.out.println("test");
-			
-			// Getting artists
-			// TODO:
-			String[] artists = new String[50];
-			String s = "bjwtweegwesoejlnwetweffssagwadfhjrjutmrye";
-			
-			for(int n = 0; n < artists.length; n++) {
-				int index = (int)(Math.random() * (s.length() - 1)) + 1;
-				artists[n] = s.substring(0, index);
+			// Getting artists from binary tree
+			BinaryTree tree = connection.readTree();
+			ArrayList<Track> tracks = tree.preOrderTraversal();
+			ArrayList<String> artists = new ArrayList<String>();
+			for(int n = 0; n < tracks.size(); n++) {
+				String artist = tracks.get(n).getArtist();
+				if(!artists.contains(artist)) artists.add(artist);
 			}
 			
 			// Adding to list
-			rightPanel.remove(listScroller);
-			list = new JList<String>(artists);
-			listScroller = new JScrollPane(list);
-			rightPanel.add(listScroller);
-			rightPanel.validate();
-			rightPanel.repaint();
+			updateList(artists);
+		}
+		else if(source.equals(albumButton)) {
+			// Getting artists from binary tree
+			BinaryTree tree = connection.readTree();
+			ArrayList<Track> tracks = tree.preOrderTraversal();
+			ArrayList<String> albums = new ArrayList<String>();
+			for(int n = 0; n < tracks.size(); n++) {
+				String album = tracks.get(n).getAlbum();
+				if(!albums.contains(album)) albums.add(album);
+			}
+			
+			// Adding to list
+			updateList(albums);
+		}
+		else if(source.equals(songButton)) {
+			// Getting artists from binary tree
+			BinaryTree tree = connection.readTree();
+			ArrayList<Track> tracks = tree.preOrderTraversal();
+			ArrayList<String> titles = new ArrayList<String>();
+			for(int n = 0; n < tracks.size(); n++) {
+				String title = tracks.get(n).getTitle();
+				if(!titles.contains(title)) titles.add(title);
+			}
+			
+			// Adding to list
+			updateList(titles);
 		}
 	}
 }
