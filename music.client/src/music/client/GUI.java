@@ -14,19 +14,23 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import music.core.Track;
 import music.core.binarytree.BinaryTree;
 
-public class GUI implements ActionListener{
+public class GUI implements ActionListener, ListSelectionListener{
 
 	private final ClientConnectionImpl connection;
 	
 	private JFrame frame = new JFrame();
 	private JPanel leftPanel, rightPanel;
-	private JButton artistButton, albumButton, songButton;
+	private JButton artistButton, albumButton, songButton, updateButton;
 	private JList<String> list;
 	private JScrollPane listScroller;
+	
+	private BinaryTree tree;
 	
 	public GUI(ClientConnectionImpl connection) {
 		this.connection = connection;
@@ -57,38 +61,24 @@ public class GUI implements ActionListener{
 		populateRightPanel();
 		frame.add(rightPanel, BorderLayout.EAST);
 		
+		// Request tree from server
+		tree = connection.readTree();
 		frame.setVisible(true);
-		/*
-		// Container for top and bottom area
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.add(new JLabel("panel"));
-		frame.add(panel);
-		
-		// Top area
-		JPanel top = new JPanel();
-		top.setLayout(new BoxLayout(top, BoxLayout.X_AXIS));
-		top.setBackground(Color.RED);
-		top.add(new JLabel("top"));
-		panel.add(top);
-		// Top left
-		JPanel topLeft = new JPanel();
-		topLeft.setLayout(new BoxLayout(topLeft, BoxLayout.X_AXIS));
-		topLeft.add(new JLabel("topLeft"));
-		top.add(topLeft);
-		*/
 	}
 	
 	private void populateLeftPanel() {
 		artistButton = new JButton("Artists");
 		albumButton = new JButton("Albums");
 		songButton = new JButton("Songs");
+		updateButton = new JButton("UPDATE");
 		artistButton.addActionListener(this);
 		albumButton.addActionListener(this);
 		songButton.addActionListener(this);
+		updateButton.addActionListener(this);
 		leftPanel.add(artistButton);
 		leftPanel.add(albumButton);
 		leftPanel.add(songButton);
+		leftPanel.add(updateButton);
 	}
 	
 	private void populateRightPanel() {
@@ -109,6 +99,7 @@ public class GUI implements ActionListener{
 	private void updateList(ArrayList<String> values) {
 		rightPanel.remove(listScroller);
 		list = new JList<String>(values.toArray(new String[values.size()]));
+		list.addListSelectionListener(this);
 		listScroller = new JScrollPane(list);
 		rightPanel.add(listScroller);
 		rightPanel.validate();
@@ -121,7 +112,6 @@ public class GUI implements ActionListener{
 		
 		if(source.equals(artistButton)) {
 			// Getting artists from binary tree
-			BinaryTree tree = connection.readTree();
 			ArrayList<Track> tracks = tree.preOrderTraversal();
 			ArrayList<String> artists = new ArrayList<String>();
 			for(int n = 0; n < tracks.size(); n++) {
@@ -134,7 +124,6 @@ public class GUI implements ActionListener{
 		}
 		else if(source.equals(albumButton)) {
 			// Getting artists from binary tree
-			BinaryTree tree = connection.readTree();
 			ArrayList<Track> tracks = tree.preOrderTraversal();
 			ArrayList<String> albums = new ArrayList<String>();
 			for(int n = 0; n < tracks.size(); n++) {
@@ -147,7 +136,6 @@ public class GUI implements ActionListener{
 		}
 		else if(source.equals(songButton)) {
 			// Getting artists from binary tree
-			BinaryTree tree = connection.readTree();
 			ArrayList<Track> tracks = tree.preOrderTraversal();
 			ArrayList<String> titles = new ArrayList<String>();
 			for(int n = 0; n < tracks.size(); n++) {
@@ -158,5 +146,13 @@ public class GUI implements ActionListener{
 			// Adding to list
 			updateList(titles);
 		}
+		else if(source.equals(updateButton)) {
+			tree = connection.readTree();
+		}
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent object) {
+		list.getSelectedValue();
 	}
 }
