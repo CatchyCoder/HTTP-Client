@@ -22,8 +22,9 @@ public abstract class ClientConnection extends AbstractConnection implements Run
 	@Override
 	public synchronized void disconnect() {
 		if(!isClosed()) {
+			// Below code caused a loop of disconnect()
 			// Notify server that client is disconnecting
-			writeInt(Message.DISCONNECT.ordinal());
+			//writeInt(Message.DISCONNECT.ordinal());
 			
 			// Disconnect
 			super.disconnect();
@@ -37,6 +38,14 @@ public abstract class ClientConnection extends AbstractConnection implements Run
 		
 		// Download file
 		super.readFile(newPath);
+	}
+	
+	protected void test_readStream(String path) {
+		// Notify server that client is downloading a file
+		writeInt(Message.DATABASE_RETRIEVE.ordinal());
+		
+		// stream file
+		super.test_readStream(path);
 	}
 	
 	@Override

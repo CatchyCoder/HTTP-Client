@@ -17,8 +17,8 @@ public class ClientConnectionImpl extends ClientConnection {
 	
 	@Override
 	public void run() {
-		// Disconnect
-		//disconnect();
+		log.debug("Calling test_readStream(path) in run():\n");
+		test_readStream("C:/mnt/ext500GB/server/");
 	}
 	
 	public BinaryTree updateTree() {

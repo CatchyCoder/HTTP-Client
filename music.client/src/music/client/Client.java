@@ -20,7 +20,7 @@ public class Client {
 	public Client() {
 		// Connect to the server
 		connect();
-		new GUI(connection);
+		//new GUI(connection);
 	}
 	
 	public void connect() {
