@@ -1,22 +1,17 @@
 package music.client;
 
 import java.net.Socket;
-import java.util.ArrayList;
 
 import music.core.AbstractConnection;
-import music.core.Track;
 import music.core.binarytree.BinaryTree;
 
-public abstract class ClientConnection extends AbstractConnection implements Runnable {
+public abstract class ClientConnection extends AbstractConnection {
 
 	public ClientConnection(Socket socket) {
 		super(socket);
 		
 		// Read server's first ACK
 		readACK();
-		
-		// Start session
-		new Thread(this).start();
 	}
 	
 	@Override
@@ -57,12 +52,11 @@ public abstract class ClientConnection extends AbstractConnection implements Run
 		super.writeFile(filePath);
 	}
 	
-	@Override
 	protected BinaryTree readTree() {
 		// Notify server that client is downloading tree
 		writeInt(Message.LIBRARY.ordinal());
 		
 		// Read BinaryTree
-		return super.readTree();
+		return (BinaryTree) super.readObject();
 	}
 }

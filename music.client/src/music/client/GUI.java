@@ -3,156 +3,273 @@ package music.client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JList;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import music.core.Storage;
 import music.core.Track;
 import music.core.binarytree.BinaryTree;
 
-public class GUI implements ActionListener, ListSelectionListener{
-
-	private final ClientConnectionImpl connection;
+public class GUI extends Client implements ActionListener, ListSelectionListener {
 	
+	private static final Logger log = LogManager.getLogger(GUI.class);
+	
+	// Loading screen
+	private JFrame loadingFrame = new JFrame();
+	private JPanel loadingPanel = new JPanel();
+	private JLabel loadingMessage = new JLabel();
+	
+	// Main GUI
 	private JFrame frame = new JFrame();
-	private JPanel leftPanel, rightPanel;
-	private JButton artistButton, albumButton, songButton, updateButton;
-	private JList<String> list;
-	private JScrollPane listScroller;
+	private JPanel center;
+	private final Font font = new Font("Arial", Font.PLAIN, 24);
+	private JButton client, server, downloads;
 	
-	private BinaryTree tree;
-	
-	public GUI(ClientConnectionImpl connection) {
-		this.connection = connection;
+	public GUI() {
+		// Setup and deploy loading screen
+		loadingSetup();
 		
-		// Setting up client GUI
-		frame.setSize(700, 500);
-		frame.setLayout(new BorderLayout());
+		// Setup and deploy main GUI
+		mainGUISetup();
+	}
+	
+	private void loadingSetup() {
+		Dimension size = new Dimension(500, 100);
+		loadingFrame.setSize(size);
+		loadingFrame.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		loadingFrame.setUndecorated(true);
+		loadingFrame.setLocationRelativeTo(null);
+		loadingFrame.setResizable(false);
+		
+		loadingPanel = new JPanel();
+		loadingPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		loadingPanel.setPreferredSize(size);
+		loadingFrame.add(loadingPanel);
+		
+		loadingMessage.setFont(new Font("Arial", Font.BOLD, 18));
+		loadingMessage.setText("Loading application  |  configuring files.");
+		loadingMessage.setOpaque(true); // Allow JLabel to paint its background
+		loadingMessage.setForeground(Color.WHITE);
+		loadingMessage.setBackground(Color.DARK_GRAY);
+		loadingMessage.setHorizontalAlignment(SwingConstants.CENTER);
+		loadingMessage.setPreferredSize(size);
+		loadingPanel.add(loadingMessage);
+		
+		loadingFrame.setVisible(true);
+		
+		try {
+			Thread.sleep(10);
+		} catch(Exception e) {}
+		
+		// Setting up application storage
+		storage = new Storage("C:/music_client", "/database", "/download");
+		
+		loadingMessage.setText("Connecting to server...");
+		
+		// Connecting client to server
+		connection = connect();
+		
+		loadingMessage.setText("Done.");
+		loadingFrame.setVisible(false);
+	}
+	
+	private void mainGUISetup() {
+		frame.setSize(950, 700);
+		frame.setLayout(new BorderLayout(0, 0));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(false);
 		
-		// Left panel setup
-		leftPanel = new JPanel();
-		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-		leftPanel.setBackground(Color.GRAY);
-		Dimension size = new Dimension((int)(frame.getWidth() * 0.3) - 5, frame.getHeight());
-		leftPanel.setSize(size);
-		leftPanel.setPreferredSize(size);
-		populateLeftPanel();
-		frame.add(leftPanel, BorderLayout.WEST);
+		// Top JPanel for North border buttons
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new GridLayout(1, 0, 0, 0)); // 1 row with as many columns as necessary
+		topPanel.setBackground(Color.DARK_GRAY);
+		// Client button
+		client = new JButton("Client");
+		client.addActionListener(this);
+		client.setBackground(Color.DARK_GRAY);
+		client.setForeground(Color.WHITE);
+		client.setBorderPainted(false); // Do not paint a border around button when hovering over with mouse
+		client.setFocusPainted(false); // Do not paint a border around text when button is selected
+		client.setHorizontalTextPosition(SwingConstants.CENTER);
+		client.setFont(font);
+		client.setDisabledIcon(null);
+		client.setEnabled(false); // Client is shown by default, and is therefore disabled
+		topPanel.add(client);
+		// Downloads button
+		downloads = new JButton("Downloads");
+		downloads.addActionListener(this);
+		downloads.setBackground(Color.DARK_GRAY);
+		downloads.setForeground(Color.WHITE);
+		downloads.setBorderPainted(false); // Do not paint a border around button when hovering over with mouse
+		downloads.setFocusPainted(false); // Do not paint a border around text when button is selected
+		downloads.setHorizontalTextPosition(SwingConstants.CENTER);
+		downloads.setFont(font);
+		topPanel.add(downloads);
+		// Server button
+		server = new JButton("Server");
+		server.addActionListener(this);
+		server.setBackground(Color.DARK_GRAY);
+		server.setForeground(Color.WHITE);
+		server.setBorderPainted(false); // Do not paint a border around button when hovering over with mouse
+		server.setFocusPainted(false); // Do not paint a border around text when button is selected
+		server.setHorizontalTextPosition(SwingConstants.CENTER);
+		server.setFont(font);
+		topPanel.add(server);
+		frame.add(topPanel, BorderLayout.NORTH);
 		
-		// Right panel setup
-		rightPanel = new JPanel();
-		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-		Dimension size2 = new Dimension((int)(frame.getWidth() * 0.7), frame.getHeight());
-		rightPanel.setSize(size2);
-		rightPanel.setPreferredSize(size2);
-		populateRightPanel();
-		frame.add(rightPanel, BorderLayout.EAST);
+		// CENTER PANEL
+		ArrayList<String> artists = getArtists(storage.getBinaryTree());
+		Page defaultPage = new Page(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+		loadPage(defaultPage);
 		
-		// Request tree from server
-		tree = connection.readTree();
 		frame.setVisible(true);
 	}
 	
-	private void populateLeftPanel() {
-		artistButton = new JButton("Artists");
-		albumButton = new JButton("Albums");
-		songButton = new JButton("Songs");
-		updateButton = new JButton("UPDATE");
-		artistButton.addActionListener(this);
-		albumButton.addActionListener(this);
-		songButton.addActionListener(this);
-		updateButton.addActionListener(this);
-		leftPanel.add(artistButton);
-		leftPanel.add(albumButton);
-		leftPanel.add(songButton);
-		leftPanel.add(updateButton);
+	public void loadPage(Page page) {
+		if(center != null) frame.remove(center);
+		center = page;
+		frame.add(center, BorderLayout.CENTER);
+		// Re-validate components and repaint
+		frame.validate();
+		frame.repaint();
 	}
 	
-	private void populateRightPanel() {
-		String[] str = new String[1];
-		str[0] = "Please select an option from the right.";
-		list = new JList<String>(str);
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setLayoutOrientation(JList.VERTICAL);
-		
-		// Setting up scroll pane for list
-		listScroller = new JScrollPane(list);
-		listScroller.setPreferredSize(null);
-		
-		rightPanel.add(listScroller);
-		
+	
+	public static ArrayList<String> getArtists(BinaryTree tree) {
+		// Getting artists from binary tree
+		ArrayList<Track> all_elements = tree.preOrderTraversal();
+		ArrayList<String> artists = new ArrayList<String>();
+		for(int n = 0; n < all_elements.size(); n++) {
+			String artist = all_elements.get(n).getArtist();
+			if(!artists.contains(artist)) artists.add(artist);
+		}
+		return artists;
 	}
 	
-	private void updateList(ArrayList<String> values) {
-		rightPanel.remove(listScroller);
-		list = new JList<String>(values.toArray(new String[values.size()]));
-		list.addListSelectionListener(this);
-		listScroller = new JScrollPane(list);
-		rightPanel.add(listScroller);
-		rightPanel.validate();
-		rightPanel.repaint();
+	public static ArrayList<String> getAlbums(BinaryTree tree) {
+		// Getting artists from binary tree
+		ArrayList<Track> all_elements = tree.preOrderTraversal();
+		ArrayList<String> albums = new ArrayList<String>();
+		for(int n = 0; n < all_elements.size(); n++) {
+			String album = all_elements.get(n).getAlbum();
+			if(!albums.contains(album)) albums.add(album);
+		}
+		return albums;
+	}
+	
+	public static ArrayList<String> getSongs(BinaryTree tree) {
+		// Getting artists from binary tree
+		ArrayList<Track> all_elements = tree.preOrderTraversal();
+		ArrayList<String> songs = new ArrayList<String>();
+		for(int n = 0; n < all_elements.size(); n++) {
+			String song = all_elements.get(n).getTitle();
+			if(!songs.contains(song)) songs.add(song);
+		}
+		return songs;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent object) {
 		Object source = object.getSource();
 		
-		if(source.equals(artistButton)) {
-			// Getting artists from binary tree
-			ArrayList<Track> tracks = tree.preOrderTraversal();
-			ArrayList<String> artists = new ArrayList<String>();
-			for(int n = 0; n < tracks.size(); n++) {
-				String artist = tracks.get(n).getArtist();
-				if(!artists.contains(artist)) artists.add(artist);
-			}
+		// Enable all buttons and only disable the selected one
+		client.setEnabled(true);
+		downloads.setEnabled(true);
+		server.setEnabled(true);
+		
+		if(source.equals(client)) {
+			client.setEnabled(false);
 			
-			// Adding to list
-			updateList(artists);
-		}
-		else if(source.equals(albumButton)) {
-			// Getting artists from binary tree
-			ArrayList<Track> tracks = tree.preOrderTraversal();
-			ArrayList<String> albums = new ArrayList<String>();
-			for(int n = 0; n < tracks.size(); n++) {
-				String album = tracks.get(n).getAlbum();
-				if(!albums.contains(album)) albums.add(album);
-			}
+			// Update database and search tree, then retrieve updated tree
+			storage.update();
+			BinaryTree tree = storage.getBinaryTree();
 			
-			// Adding to list
-			updateList(albums);
-		}
-		else if(source.equals(songButton)) {
-			// Getting artists from binary tree
-			ArrayList<Track> tracks = tree.preOrderTraversal();
-			ArrayList<String> titles = new ArrayList<String>();
-			for(int n = 0; n < tracks.size(); n++) {
-				String title = tracks.get(n).getTitle();
-				if(!titles.contains(title)) titles.add(title);
-			}
+			// Get artists from tree and display artists
+			ArrayList<String> artists = getArtists(tree);
+			Page page = new Page(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+			loadPage(page);
 			
-			// Adding to list
-			updateList(titles);
-		}
-		else if(source.equals(updateButton)) {
-			tree = connection.readTree();
+		} else if(source.equals(downloads)) {
+			downloads.setEnabled(false);
+			// TODO: Code downloads page - will need to sync up with download methods
+		} else if(source.equals(server)) {
+			server.setEnabled(false);
+			
+			// If client was able to connect to server
+			if(connection != null) {
+				// Grabbing tree from server (assuming server is listening for next command)
+				BinaryTree tree = connection.readTree();
+				
+				// Get artists from tree and display artists
+				ArrayList<String> artists = getArtists(tree);
+				Page page = new Page(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+				loadPage(page);
+			} else {
+				// Inform user that client could not connect to server
+				ArrayList<String> message = new ArrayList<String>();
+				message.add("Client could not connect to server.");
+				Page page = new Page(Page.PAGE_TYPE.ERROR, message, storage, this);
+				loadPage(page);
+			}
 		}
 	}
 
 	@Override
 	public void valueChanged(ListSelectionEvent object) {
-		list.getSelectedValue();
+		// Have a class that is for viewing an artists page,
+		// it can then populate classes that are for viewing the artists
+		// albums or songs
+		
+		// The list will either be the regular list of all artists, albums, songs OR 
+		// be showing a list that is handled by the artist class
+		
+		
+		
+		/*
+		// A selection was made in the list, by checking getValueIsAdjusting()
+		// the code will run right when an event was created, and ignore the last event.
+		if(object.getValueIsAdjusting()) {
+			String value = list.getSelectedValue();
+			
+			// Gather all albums in the tree that have the String
+			// value as their artist
+			BinaryTree tree = null;
+			if(viewingServer) {				
+				// Grabbing tree from server (assuming server is listening for next command)
+				tree = connection.readTree();
+			} else {
+				// Update database and search tree, then retrieve updated tree
+				storage.update();
+				tree = storage.getBinaryTree();
+			}
+			ArrayList<Track> all_elements = tree.preOrderTraversal();
+			ArrayList<String> albums = new ArrayList<String>();
+			for(int n = 0; n < all_elements.size(); n++) {
+				String artist = all_elements.get(n).getArtist();
+				if(artist.equals(value)) {
+					String album = all_elements.get(n).getAlbum();
+					albums.add(album);
+				}
+			}
+			
+			
+		}
+		*/
 	}
 }
