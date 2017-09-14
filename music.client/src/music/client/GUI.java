@@ -135,7 +135,7 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 		
 		// CENTER PANEL
 		ArrayList<String> artists = getArtists(storage.getBinaryTree());
-		Page defaultPage = new Page(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+		ClientPage defaultPage = new ClientPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
 		loadPage(defaultPage);
 		
 		frame.setVisible(true);
@@ -150,6 +150,32 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 		frame.repaint();
 	}
 	
+	/**
+	 * Does a search on the passed in binary tree to find Track objects that match the passed
+	 * in artist, album, and track specifications. If artist, album, or track are null then the
+	 * filter isn't used.
+	 * 
+	 * @param tree
+	 * @param artist return tracks with this artist
+	 * @param album return tracks with this album
+	 * @param title return tracks with this title
+	 * @return the Track objects that meet all three specifications.
+	 */
+	public static ArrayList<Track> search(BinaryTree tree, String artist, String album, String title) {
+		// Getting artists from binary tree
+		ArrayList<Track> all_elements = tree.preOrderTraversal();
+		ArrayList<Track> elements = new ArrayList<Track>();
+		for(int n = 0; n < all_elements.size(); n++) {
+			Track track = all_elements.get(n);
+			if(
+				(track.getArtist().equals(artist) || artist == null) && // Check for artist match
+				(track.getAlbum().equals(album) || album == null) && // Check for album match
+				(track.getTitle().equals(title) || title == null)) { // Check for title match
+				elements.add(track);
+			}
+		}
+		return elements;
+	}
 	
 	public static ArrayList<String> getArtists(BinaryTree tree) {
 		// Getting artists from binary tree
@@ -183,6 +209,19 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 		}
 		return songs;
 	}
+	
+	public static ArrayList<String> getSongsFromArtist(BinaryTree tree, String artist) {
+		ArrayList<Track> all_elements = tree.preOrderTraversal();
+		ArrayList<String> songs = new ArrayList<String>();
+		for(int n = 0; n < all_elements.size(); n++) {
+			Track track = all_elements.get(n);
+			String trackArtist = track.getArtist();
+			String trackTitle = track.getTitle();
+			// Check if the track is by the specified artist, if so add to the ArrayList that will be returned
+			if(trackArtist.equals(artist) && !songs.contains(trackTitle)) songs.add(trackTitle);
+		}
+		return songs;
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent object) {
@@ -202,7 +241,7 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 			
 			// Get artists from tree and display artists
 			ArrayList<String> artists = getArtists(tree);
-			Page page = new Page(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+			ClientPage page = new ClientPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
 			loadPage(page);
 			
 		} else if(source.equals(downloads)) {
@@ -218,13 +257,13 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 				
 				// Get artists from tree and display artists
 				ArrayList<String> artists = getArtists(tree);
-				Page page = new Page(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+				ServerPage page = new ServerPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
 				loadPage(page);
 			} else {
 				// Inform user that client could not connect to server
 				ArrayList<String> message = new ArrayList<String>();
 				message.add("Client could not connect to server.");
-				Page page = new Page(Page.PAGE_TYPE.ERROR, message, storage, this);
+				ServerPage page = new ServerPage(Page.PAGE_TYPE.ERROR, message, storage, this);
 				loadPage(page);
 			}
 		}

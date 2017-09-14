@@ -5,7 +5,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -22,20 +21,20 @@ import music.core.Storage;
 /**
  * A JPanel that acts as a viewing page for artists, albums and songs by utilizing <code>javax.swing.JList</code>.
  */
-public class Page extends JPanel implements ActionListener, ListSelectionListener {
+public abstract class Page extends JPanel implements ActionListener, ListSelectionListener {
 	
 	private static final Logger log = LogManager.getLogger(Page.class);
 	
 	private static final long serialVersionUID = 1L;
 	
 	public static enum PAGE_TYPE {ARTIST_ALL_ALBUMS, ARTIST_ALL_SONGS, ALBUM_SONGS, ALL_ARTISTS, ALL_ALBUMS, ALL_SONGS, ERROR};
-	private PAGE_TYPE pageType; // The type of data this page is displaying
+	protected PAGE_TYPE pageType; // The type of data this page is displaying
 	
-	private GUI gui;
-	private Storage storage;
+	protected GUI gui;
+	protected Storage storage;
 	
-	private JList<String> list;
-	private JScrollPane listScroller;
+	protected JList<String> list;
+	protected JScrollPane listScroller;
 	
 	/**
 	 * Initializes the JPanel that will act as a viewing page for server or client content. PAGE_TYPE tells the Page what kind
@@ -81,42 +80,5 @@ public class Page extends JPanel implements ActionListener, ListSelectionListene
 		repaint();
 	}
 
-	@Override
-	public void valueChanged(ListSelectionEvent event) {
-		// A selection was made in the list, by checking getValueIsAdjusting()
-		// the code will run right when an event was created, and ignore the last event.
-		if(event.getValueIsAdjusting()) {
-			String value = list.getSelectedValue();
-			
-			// Load a new page depending on the data type currently displayed
-			switch(pageType) {
-			case ARTIST_ALL_ALBUMS:
-				ArrayList<String> test = null;
-				Page page = new Page(PAGE_TYPE.ALBUM_SONGS, test, storage, gui);
-				gui.loadPage(page);
-				break;
-			case ARTIST_ALL_SONGS:
-				break;
-			case ALBUM_SONGS:
-				break;
-			case ALL_ALBUMS:
-				break;
-			case ALL_ARTISTS:
-				break;
-			case ALL_SONGS:
-				break;
-			case ERROR:
-				break;
-			default:
-				log.error("An error occured attempting to switch to a new Page based on the current pageType value.");
-			}
-		}
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 }
