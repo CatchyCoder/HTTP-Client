@@ -43,9 +43,11 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 	public GUI() {
 		// Setup and deploy loading screen
 		loadingSetup();
-		
+
 		// Setup and deploy main GUI
 		mainGUISetup();
+		
+		this.connection.test_readStream("C://test");
 	}
 	
 	private void loadingSetup() {

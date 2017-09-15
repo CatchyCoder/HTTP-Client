@@ -44,7 +44,7 @@ public abstract class Page extends JPanel implements ActionListener, ListSelecti
 	 * create a new page with a PAGE_TYPE of ALBUM_SONGS.
 	 * 
 	 * @param pageType The type of data displayed on the page
-	 * @param value the data to display
+	 * @param values the data to display
 	 * @param storage the storage object where client and server files can be found
 	 */
 	public Page(PAGE_TYPE pageType, ArrayList<String> values, Storage storage, GUI gui) {

@@ -32,16 +32,16 @@ public class ClientPage extends Page {
 			// Load a new page depending on the data type currently displayed
 			switch(pageType) {
 			case ARTIST_ALL_ALBUMS:
-				ArrayList<Track> tracks = GUI.search(storage.getBinaryTree(), );
+				/*ArrayList<Track> tracks = GUI.search(storage.getBinaryTree(), );
 				
 				ClientPage page = new ClientPage(PAGE_TYPE.ALBUM_SONGS, test, storage, gui);
-				gui.loadPage(page);
+				gui.loadPage(page);*/
 				break;
 			case ARTIST_ALL_SONGS:
-				ArrayList<String> songsFromArtist = GUI.getSongsFromArtist(storage.getBinaryTree(), value);
+				/*ArrayList<String> songsFromArtist = GUI.getSongsFromArtist(storage.getBinaryTree(), value);
 				
 				ClientPage page = new ClientPage(PAGE_TYPE.ALBUM_SONGS, test, storage, gui);
-				gui.loadPage(page);
+				gui.loadPage(page);*/
 				break;
 			case ALBUM_SONGS:
 				break;

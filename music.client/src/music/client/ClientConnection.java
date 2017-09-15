@@ -36,7 +36,7 @@ public abstract class ClientConnection extends AbstractConnection {
 	}
 	
 	protected void test_readStream(String path) {
-		// Notify server that client is downloading a file
+		// Notify server that client is streaming a file
 		writeInt(Message.DATABASE_RETRIEVE.ordinal());
 		
 		// stream file
