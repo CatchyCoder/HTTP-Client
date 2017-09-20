@@ -13,8 +13,8 @@ public class Client {
 	
 	//private final String hostIP = "63.155.32.96"; // Raspberry Pi public IP
 	//private final String hostIP = "192.168.0.34"; // Raspberry Pi private IP
-	private final String hostIP = "127.0.0.1";
-	//private final String hostIP = "192.168.0.7";
+	//private final String hostIP = "127.0.0.1";
+	private final String hostIP = "192.168.0.104";
 	
 	private static final Logger log = LogManager.getLogger(Client.class);
 	

@@ -35,21 +35,34 @@ public abstract class ClientConnection extends AbstractConnection {
 		super.readFile(newPath);
 	}
 	
-	protected void test_readStream(String path) {
+	@Override
+	protected void stream() {
 		// Notify server that client is streaming a file
-		writeInt(Message.DATABASE_RETRIEVE.ordinal());
+		writeInt(Message.DATABASE_STREAM.ordinal());
 		
-		// stream file
-		super.test_readStream(path);
+		// Stream file
+		super.stream();
 	}
 	
 	@Override
-	protected void writeFile(String filePath) {
+	protected void playLocal() {
+		
+		// TODO: This method is just for testing
+		
+		// Notify server that client is streaming a file
+		writeInt(Message.DATABASE_STREAM.ordinal());
+		
+		// Stream file
+		super.playLocal();
+	}
+	
+	@Override
+	protected void writeFile(String filePath, boolean streaming) {
 		// Notify server that client is sending a file
 		writeInt(Message.DATABASE_ADD.ordinal());
 		
 		// Send file
-		super.writeFile(filePath);
+		super.writeFile(filePath, streaming);
 	}
 	
 	protected BinaryTree readTree() {
