@@ -2,7 +2,6 @@ package music.client;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
@@ -10,13 +9,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import music.core.Storage;
 
 /**
  * A JPanel that acts as a viewing page for artists, albums and songs by utilizing <code>javax.swing.JList</code>.
@@ -31,7 +27,6 @@ public abstract class Page extends JPanel implements ActionListener, ListSelecti
 	protected PAGE_TYPE pageType; // The type of data this page is displaying
 	
 	protected GUI gui;
-	protected Storage storage;
 	
 	protected JList<String> list;
 	protected JScrollPane listScroller;
@@ -47,9 +42,8 @@ public abstract class Page extends JPanel implements ActionListener, ListSelecti
 	 * @param values the data to display
 	 * @param storage the storage object where client and server files can be found
 	 */
-	public Page(PAGE_TYPE pageType, ArrayList<String> values, Storage storage, GUI gui) {
+	public Page(PAGE_TYPE pageType, ArrayList<String> values, GUI gui) {
 		this.pageType = pageType;
-		this.storage = storage;
 		this.gui = gui;
 		
 		setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));

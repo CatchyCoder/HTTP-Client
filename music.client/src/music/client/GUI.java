@@ -25,14 +25,9 @@ import music.core.Storage;
 import music.core.Track;
 import music.core.binarytree.BinaryTree;
 
-public class GUI extends Client implements ActionListener, ListSelectionListener {
+public class GUI implements ActionListener, ListSelectionListener {
 	
 	private static final Logger log = LogManager.getLogger(GUI.class);
-	
-	// Loading screen
-	private JFrame loadingFrame = new JFrame();
-	private JPanel loadingPanel = new JPanel();
-	private JLabel loadingMessage = new JLabel();
 	
 	// Main GUI
 	private JFrame frame = new JFrame();
@@ -41,53 +36,8 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 	private JButton client, server, downloads;
 	
 	public GUI() {
-		// Setup and deploy loading screen
-		loadingSetup();
-
 		// Setup and deploy main GUI
 		mainGUISetup();
-		
-		this.connection.stream();
-	}
-	
-	private void loadingSetup() {
-		Dimension size = new Dimension(500, 100);
-		loadingFrame.setSize(size);
-		loadingFrame.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		loadingFrame.setUndecorated(true);
-		loadingFrame.setLocationRelativeTo(null);
-		loadingFrame.setResizable(false);
-		
-		loadingPanel = new JPanel();
-		loadingPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		loadingPanel.setPreferredSize(size);
-		loadingFrame.add(loadingPanel);
-		
-		loadingMessage.setFont(new Font("Arial", Font.BOLD, 18));
-		loadingMessage.setText("Loading application  |  configuring files.");
-		loadingMessage.setOpaque(true); // Allow JLabel to paint its background
-		loadingMessage.setForeground(Color.WHITE);
-		loadingMessage.setBackground(Color.DARK_GRAY);
-		loadingMessage.setHorizontalAlignment(SwingConstants.CENTER);
-		loadingMessage.setPreferredSize(size);
-		loadingPanel.add(loadingMessage);
-		
-		loadingFrame.setVisible(true);
-		
-		try {
-			Thread.sleep(10);
-		} catch(Exception e) {}
-		
-		// Setting up application storage
-		storage = new Storage("C:/music_client", "/database", "/download");
-		
-		loadingMessage.setText("Connecting to server...");
-		
-		// Connecting client to server
-		connection = connect();
-		
-		loadingMessage.setText("Done.");
-		loadingFrame.setVisible(false);
 	}
 	
 	private void mainGUISetup() {
@@ -136,8 +86,8 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 		frame.add(topPanel, BorderLayout.NORTH);
 		
 		// CENTER PANEL
-		ArrayList<String> artists = getArtists(storage.getBinaryTree());
-		ClientPage defaultPage = new ClientPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+		ArrayList<String> artists = getArtists(Client.STORAGE.getBinaryTree());
+		ClientPage defaultPage = new ClientPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, this);
 		loadPage(defaultPage);
 		
 		frame.setVisible(true);
@@ -238,12 +188,12 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 			client.setEnabled(false);
 			
 			// Update database and search tree, then retrieve updated tree
-			storage.update();
-			BinaryTree tree = storage.getBinaryTree();
+			Client.STORAGE.update();
+			BinaryTree tree = Client.STORAGE.getBinaryTree();
 			
 			// Get artists from tree and display artists
 			ArrayList<String> artists = getArtists(tree);
-			ClientPage page = new ClientPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, storage, this);
+			ClientPage page = new ClientPage(Page.PAGE_TYPE.ALL_ARTISTS, artists, this);
 			loadPage(page);
 			
 		} else if(source.equals(downloads)) {
@@ -252,10 +202,11 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 		} else if(source.equals(server)) {
 			server.setEnabled(false);
 			
+			/*
 			// If client was able to connect to server
-			if(connection != null) {
+			if(comConnection != null) {
 				// Grabbing tree from server (assuming server is listening for next command)
-				BinaryTree tree = connection.readTree();
+				BinaryTree tree = comConnection.readTree();
 				
 				// Get artists from tree and display artists
 				ArrayList<String> artists = getArtists(tree);
@@ -268,6 +219,7 @@ public class GUI extends Client implements ActionListener, ListSelectionListener
 				ServerPage page = new ServerPage(Page.PAGE_TYPE.ERROR, message, storage, this);
 				loadPage(page);
 			}
+			*/
 		}
 	}
 

@@ -17,8 +17,8 @@ public class ClientPage extends Page {
 
 	private static final long serialVersionUID = 1L;
 
-	public ClientPage(PAGE_TYPE pageType, ArrayList<String> values, Storage storage, GUI gui) {
-		super(pageType, values, storage, gui);
+	public ClientPage(PAGE_TYPE pageType, ArrayList<String> values, GUI gui) {
+		super(pageType, values, gui);
 	}
 	
 	@Override
